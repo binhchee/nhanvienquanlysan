@@ -290,6 +290,30 @@ function render(){
     document.getElementById('list').innerHTML = html || `<div class="text-center py-24 opacity-20 font-black text-slate-400 italic">DANH SÁCH TRỐNG</div>`;
 }
 
+    // Lệnh này luôn trực chiến, hễ có đơn là tự chạy
+refDonHang.on('value', (snapshot) => {
+    const tatCaDonHang = snapshot.val();
+    const vungHienThi = document.getElementById('admin-list');
+    
+    vungHienThi.innerHTML = ""; // Xóa cũ hiện mới
+
+    for (let id in tatCaDonHang) {
+        const don = tatCaDonHang[id];
+        vungHienThi.innerHTML += `
+            <div style="border: 1px solid #ccc; margin: 10px; p: 10px;">
+                <p>Khách: ${don.khachHang}</p>
+                <p>Giờ: ${don.thoiGian}</p>
+                <button onclick="duyetDon('${id}')">Duyệt đơn</button>
+            </div>
+        `;
+    }
+});
+
+// Hàm duyệt đơn của Admin
+function duyetDon(id) {
+    db.ref('orders/' + id).update({ trangThai: "Đã duyệt" });
+}
+
 checkAuth();
 </script>
 </body>
