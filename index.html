@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NHÂN VIÊN - SOCCERPRO</title>
+    <title>NHAN VIEN - QUAN LY SAN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
@@ -22,7 +22,7 @@
                 </svg>
             </div>
             <h2 class="text-2xl font-black text-emerald-800 uppercase tracking-tight">Nhân Viên Đăng Nhập</h2>
-            <p class="text-slate-400 text-sm mt-1 font-medium">Hệ thống SoccerPro v2.0</p>
+            <p class="text-slate-400 text-sm mt-1 font-medium">Hệ thống đặt sân.</p>
         </div>
         <div class="space-y-4">
             <input type="text" id="userInp" placeholder="Tên đăng nhập / SĐT" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-emerald-500 transition-all font-bold">
@@ -271,11 +271,11 @@ function render(){
                 </div>
 
                 <div class="grid grid-cols-4 gap-2">
-                    <button onclick="addService(${b.id})" class="bg-emerald-50 text-emerald-600 py-4 rounded-2xl font-black text-[10px] hover:bg-emerald-100 transition-all uppercase">Món</button>
+                    <button onclick="addService(${b.id})" class="bg-emerald-50 text-emerald-600 py-4 rounded-2xl font-black text-[10px] hover:bg-emerald-100 transition-all uppercase">Dịch Vụ</button>
                     <button onclick="pay(${b.id})" class="col-span-2 bg-emerald-600 text-white py-4 rounded-2xl font-black text-[10px] shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all uppercase">Thu Tiền</button>
                     <div class="grid grid-cols-1 gap-1">
                         <button onclick="editBooking(${b.id})" class="bg-slate-100 text-slate-500 py-1.5 rounded-lg font-black text-[9px] uppercase">Sửa</button>
-                        <button onclick="refund(${b.id})" class="bg-rose-100 text-rose-600 py-1.5 rounded-lg font-black text-[9px] uppercase">Hoàn</button>
+                        <button onclick="refund(${b.id})" class="bg-rose-100 text-rose-600 py-1.5 rounded-lg font-black text-[9px] uppercase">Hoàn Tiền</button>
                     </div>
                 </div>
             </div>
