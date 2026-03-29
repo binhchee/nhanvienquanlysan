@@ -290,6 +290,8 @@ function render(){
     document.getElementById('list').innerHTML = html || `<div class="text-center py-24 opacity-20 font-black text-slate-400 italic">DANH SÁCH TRỐNG</div>`;
 }
 
+    checkAuth();
+
     // Lệnh này luôn trực chiến, hễ có đơn là tự chạy
 refDonHang.on('value', (snapshot) => {
     const tatCaDonHang = snapshot.val();
@@ -314,7 +316,6 @@ function duyetDon(id) {
     db.ref('orders/' + id).update({ trangThai: "Đã duyệt" });
 }
 
-checkAuth();
 </script>
 </body>
 
