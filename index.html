@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NHÂN VIÊN - SOCCERPRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <style>
+        .hidden { display: none !important; }
+        .font-mono-custom { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    </style>
+</head>
+<body class="bg-slate-100 pb-24">
+
+<div id="authContainer" class="fixed inset-0 bg-emerald-900 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10">
+        <div class="text-center mb-10">
+            <div class="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-black text-emerald-800 uppercase tracking-tight">Nhân Viên Đăng Nhập</h2>
+            <p class="text-slate-400 text-sm mt-1 font-medium">Hệ thống SoccerPro v2.0</p>
+        </div>
+        <div class="space-y-4">
+            <input type="text" id="userInp" placeholder="Tên đăng nhập / SĐT" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-emerald-500 transition-all font-bold">
+            <input type="password" id="passInp" placeholder="Mật khẩu" class="w-full border-2 border-slate-100 p-4 rounded-2xl outline-none focus:border-emerald-500 transition-all font-bold">
+            <button onclick="handleLogin()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-emerald-200 hover:bg-emerald-700 active:scale-[0.98] transition-all mt-4">VÀO HỆ THỐNG</button>
+        </div>
+    </div>
+</div>
+
+<div id="mainContent" class="hidden">
+    <div class="bg-emerald-700 text-white p-4 shadow-xl sticky top-0 z-50 flex justify-between items-center border-b border-emerald-600">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-black" id="staffAvatar">NV</div>
+            <div>
+                <p class="text-[10px] opacity-70 uppercase font-bold tracking-widest">Đang làm việc</p>
+                <h2 id="staffName" class="text-sm font-black">Nhân viên</h2>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="addNewBooking()" class="bg-white text-emerald-700 px-4 py-2 rounded-xl font-black text-[11px] uppercase shadow-sm">＋ Đặt hộ</button>
+            <button onclick="logout()" class="bg-emerald-900/40 px-3 py-2 rounded-xl font-bold text-[11px] uppercase">Thoát</button>
+        </div>
+    </div>
+
+    <div class="p-4 max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-6 px-2">
+            <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">📋 Lịch đặt & Dịch vụ</h3>
+            <span id="bookingCount" class="bg-emerald-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg shadow-emerald-100">0 ĐƠN</span>
+        </div>
+
+        <div id="list" class="grid gap-6"></div>
+
+        <div id="qrContainerNV" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4 hidden">
+            <div class="bg-white w-full max-w-sm rounded-[3rem] p-8 text-center shadow-2xl">
+                <div class="mb-6">
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-1">Thanh toán chuyển khoản</p>
+                    <h3 class="text-xl font-black text-slate-800">QUÉT MÃ THU TIỀN</h3>
+                </div>
+                <div id="qrSpace" class="flex justify-center bg-slate-50 p-6 rounded-[2.5rem] mb-6 border-2 border-dashed border-slate-200 shadow-inner"></div>
+                <div class="mb-8">
+                    <p class="text-slate-400 text-xs font-bold uppercase mb-1">Số tiền cần thu thêm</p>
+                    <p id="qrAmountText" class="font-black text-red-600 text-5xl tracking-tighter"></p>
+                </div>
+                <div class="grid gap-3">
+                    <button onclick="confirmFinalPay()" class="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all">ĐÃ THU ĐỦ TIỀN</button>
+                    <button onclick="document.getElementById('qrContainerNV').classList.add('hidden')" class="w-full text-slate-400 font-bold py-2 text-sm">Hủy bỏ giao dịch</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// DỮ LIỆU GỐC
+let users = JSON.parse(localStorage.getItem("users")) || [{user: "admin", pass: "123", role: "admin"}];
+let db = JSON.parse(localStorage.getItem("db")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
+let services = JSON.parse(localStorage.getItem("services")) || [];
+let currentPayingId = null;
+
+// HÀM KIỂM TRA TÀI KHOẢN TỒN TẠI (NHÂN VIÊN BỊ XÓA THÌ THOÁT)
+function securityCheck() {
+    if(sessionStorage.getItem("isStaffLoggedIn") === "true") {
+        let currentUser = sessionStorage.getItem("currentStaff");
+        let latestUsers = JSON.parse(localStorage.getItem("users")) || [];
+        let exists = latestUsers.find(x => x.user === currentUser);
+        
+        if(!exists) {
+            alert("⚠️ Tài khoản của bạn đã bị xóa hoặc vô hiệu hóa bởi Admin!");
+            logout();
+        }
+    }
+}
+// Kiểm tra mỗi 2 giây để đảm bảo tính thời gian thực
+setInterval(securityCheck, 2000);
+
+// ĐĂNG NHẬP & PHÂN QUYỀN
+function handleLogin() {
+    const u = document.getElementById('userInp').value;
+    const p = document.getElementById('passInp').value;
+    let latestUsers = JSON.parse(localStorage.getItem("users")) || [{user: "admin", pass: "123", role: "admin"}];
+    const acc = latestUsers.find(x => (x.user === u || x.phone === u) && x.pass === p);
+    if(acc) {
+        sessionStorage.setItem("isStaffLoggedIn", "true");
+        sessionStorage.setItem("currentStaff", acc.user);
+        checkAuth();
+    } else { alert("❌ Thông tin đăng nhập không chính xác!"); }
+}
+function checkAuth() {
+    if(sessionStorage.getItem("isStaffLoggedIn") === "true") {
+        document.getElementById('authContainer').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('staffName').innerText = sessionStorage.getItem("currentStaff").toUpperCase();
+        document.getElementById('staffAvatar').innerText = sessionStorage.getItem("currentStaff").substring(0,2).toUpperCase();
+        render();
+    }
+}
+function logout() { sessionStorage.clear(); location.reload(); }
+
+// LOGIC TÍNH TOÁN
+function save(){ localStorage.setItem("db", JSON.stringify(db)); render(); }
+function calcTotalServices(b){ return b.services.reduce((sum,c)=>sum + (c.price*(c.qty||1)),0); }
+
+function calcPayable(b){
+  let totalS = calcTotalServices(b);
+  let [hour] = b.time.split(":").map(Number);
+  let isPeak = (hour >= 16);
+  let price = isPeak ? 430000 : 330000;
+  if(b.payment === "later") return (isPeak?450000:350000) + totalS;
+  if(b.payment === "deposit") return (price - 130000) + totalS;
+  if(b.payment === "online") return totalS;
+  return 0;
+}
+
+// NGHIỆP VỤ THÊM - SỬA - XÓA - HOÀN
+function addNewBooking() {
+    let name = prompt("Tên khách hàng:");
+    if(!name) return;
+    let phone = prompt("SĐT khách:");
+    let field = prompt("Tên sân (VD: Sân 1):", "Sân 1");
+    let time = prompt("Giờ bắt đầu (HH:mm):", "17:00");
+    
+    db.push({
+        id: Date.now(), name, phone, field, time,
+        date: new Date().toLocaleDateString(),
+        payment: "later", services: []
+    });
+    save();
+}
+
+function editBooking(id) {
+    let b = db.find(x => x.id == id);
+    let nTime = prompt("Sửa giờ đá:", b.time);
+    let nField = prompt("Sửa sân:", b.field);
+    if(nTime) b.time = nTime;
+    if(nField) b.field = nField;
+    save();
+}
+
+function deleteBooking(id) {
+    if(confirm("❗ Xóa vĩnh viễn đơn này?")) {
+        db = db.filter(x => x.id != id);
+        save();
+    }
+}
+
+function refund(id) {
+    let b = db.find(x => x.id == id);
+    if(b.payment === "later") return alert("Khách chưa trả tiền, không cần hoàn!");
+    let [h] = b.time.split(":").map(Number);
+    let rf = (b.payment === "deposit") ? 130000 : (h >= 16 ? 420000 : 320000);
+    if(confirm(`Hoàn ${rf.toLocaleString()}đ cho khách ${b.name}?`)) {
+        history.push({...b, total: rf, doneTime: new Date().toLocaleString(), type: "REFUND", staff: sessionStorage.getItem("currentStaff")});
+        db = db.filter(x => x.id != id);
+        localStorage.setItem("history", JSON.stringify(history));
+        save();
+    }
+}
+
+function addService(id){
+    let b = db.find(x=>x.id==id);
+    let latestServices = JSON.parse(localStorage.getItem("services")) || [];
+    if(latestServices.length === 0) return alert("Chưa có hàng trong kho!");
+    let menu = latestServices.map((s,i)=>`${i+1}. ${s.name} (${s.price.toLocaleString()}đ) - Tồn: ${s.stock}`).join("\n");
+    let c = prompt("CHỌN MÓN:\n" + menu);
+    let s = latestServices[c-1];
+    if(!s) return;
+    let q = parseInt(prompt(`Số lượng ${s.name}:`, 1));
+    if(isNaN(q) || q <= 0 || s.stock < q) return alert("Kho không đủ hoặc số lượng sai!");
+    s.stock -= q;
+    b.services.push({name:s.name, price:s.price, qty:q});
+    localStorage.setItem("services", JSON.stringify(latestServices));
+    save();
+}
+
+function pay(id){
+    let b = db.find(x=>x.id==id);
+    let amount = calcPayable(b);
+    currentPayingId = id;
+    document.getElementById('qrContainerNV').classList.remove('hidden');
+    document.getElementById('qrAmountText').innerText = amount.toLocaleString() + "đ";
+    document.getElementById("qrSpace").innerHTML = "";
+    new QRious({element: document.createElement("canvas"), value: `PAYMENT:${amount}`, size: 250})
+    .element.style.display = "block";
+    document.getElementById("qrSpace").appendChild(new QRious({value: `THU-TIEN-${b.name}-${amount}`, size: 220}).image);
+}
+
+function confirmFinalPay(){
+    let b = db.find(x=>x.id==currentPayingId);
+    let payable = calcPayable(b);
+    let [h] = b.time.split(":").map(Number);
+    let paid = (b.payment==='deposit'?130000:(b.payment==='online'?(h>=16?420000:320000):0));
+    history.push({...b, total: payable + paid, doneTime: new Date().toLocaleString(), type: "PAY", staff: sessionStorage.getItem("currentStaff")});
+    db = db.filter(x=>x.id!=currentPayingId);
+    localStorage.setItem("history", JSON.stringify(history));
+    document.getElementById('qrContainerNV').classList.add('hidden');
+    save();
+}
+
+// HIỂN THỊ CHI TIẾT
+function render(){
+    document.getElementById('bookingCount').innerText = db.length + " ĐƠN";
+    let html = "";
+    db.forEach(b => {
+        let [h] = b.time.split(":").map(Number);
+        let rem = calcPayable(b);
+        let paid = (b.payment=="deposit") ? 130000 : (b.payment=="online" ? (h>=16?420000:320000) : 0);
+        let totalS = calcTotalServices(b);
+
+        let svRows = b.services.map(s => `
+            <div class="flex justify-between text-[11px] py-1 border-b border-slate-50">
+                <span class="text-slate-600 font-medium">${s.name} <span class="text-slate-300 ml-1">x${s.qty}</span></span>
+                <span class="font-bold text-slate-700">${(s.price*s.qty).toLocaleString()}đ</span>
+            </div>
+        `).join("");
+
+        html += `
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative group">
+            <div class="p-6 pb-4">
+                <div class="flex justify-between items-start mb-4 pr-6">
+                    <div>
+                        <h4 class="text-xl font-black text-slate-800">${b.name}</h4>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="bg-emerald-50 text-emerald-600 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">🏟️ ${b.field}</span>
+                            <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">⏰ ${b.time}</span>
+                        </div>
+                    </div>
+                    <span class="text-[9px] font-black ${b.payment==='later'?'bg-orange-100 text-orange-600':'bg-slate-100 text-slate-500'} px-3 py-1 rounded-full uppercase tracking-widest">${b.payment}</span>
+                </div>
+
+                <div class="bg-slate-50/50 rounded-2xl p-4 mb-4">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Chi tiết dịch vụ & Sản phẩm</p>
+                    ${svRows || '<p class="text-[10px] text-slate-300 italic py-2">Chưa gọi dịch vụ...</p>'}
+                    ${totalS > 0 ? `<div class="flex justify-between mt-2 pt-2 border-t border-slate-200 text-xs font-black text-emerald-600 uppercase"><span>Tổng dịch vụ</span><span>${totalS.toLocaleString()}đ</span></div>` : ''}
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6 font-mono-custom">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Đã cọc/trả trước</p>
+                        <p class="font-black text-slate-600 text-lg">${paid.toLocaleString()}</p>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                        <p class="text-[9px] font-bold text-rose-400 uppercase mb-1">Cần thu thêm</p>
+                        <p class="font-black text-rose-600 text-lg">${rem.toLocaleString()}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="addService(${b.id})" class="bg-emerald-50 text-emerald-600 py-4 rounded-2xl font-black text-[10px] hover:bg-emerald-100 transition-all uppercase">Món</button>
+                    <button onclick="pay(${b.id})" class="col-span-2 bg-emerald-600 text-white py-4 rounded-2xl font-black text-[10px] shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all uppercase">Thu Tiền</button>
+                    <div class="grid grid-cols-1 gap-1">
+                        <button onclick="editBooking(${b.id})" class="bg-slate-100 text-slate-500 py-1.5 rounded-lg font-black text-[9px] uppercase">Sửa</button>
+                        <button onclick="refund(${b.id})" class="bg-rose-100 text-rose-600 py-1.5 rounded-lg font-black text-[9px] uppercase">Hoàn</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="deleteBooking(${b.id})" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>`;
+    });
+    document.getElementById('list').innerHTML = html || `<div class="text-center py-24 opacity-20 font-black text-slate-400 italic">DANH SÁCH TRỐNG</div>`;
+}
+
+checkAuth();
+</script>
+</body>
+</html>
