@@ -248,6 +248,7 @@ function render(){
                         <div class="flex items-center gap-2 mt-1">
                             <span class="bg-emerald-50 text-emerald-600 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">🏟️ ${b.field}</span>
                             <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">⏰ ${b.time}</span>
+                            <span class="bg-purple-50 text-purple-600 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter">📞 ${b.phone || 'Trống'}</span>
                         </div>
                     </div>
                     <span class="text-[9px] font-black ${b.payment==='later'?'bg-orange-100 text-orange-600':'bg-slate-100 text-slate-500'} px-3 py-1 rounded-full uppercase tracking-widest">${b.payment}</span>
@@ -304,6 +305,7 @@ refDonHang.on('value', (snapshot) => {
         vungHienThi.innerHTML += `
             <div style="border: 1px solid #ccc; margin: 10px; p: 10px;">
                 <p>Khách: ${don.khachHang}</p>
+                <p>SĐT: ${don.sdt || don.phone || don.soDienThoai || 'Chưa có'}</p>
                 <p>Giờ: ${don.thoiGian}</p>
                 <button onclick="duyetDon('${id}')">Duyệt đơn</button>
             </div>
